@@ -91,12 +91,10 @@ async function setupDatabase() {
     `);
 
     console.log('All tables created successfully on Supabase!');
-  } // ... existing code ...
   } catch (error: any) {
     console.error('Error creating tables:', error);
     throw error;
   }
-// ... existing code ...
-
+}
 
 setupDatabase();
