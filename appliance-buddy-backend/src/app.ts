@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000'],
+  origin: ['http://localhost:8080', 'http://localhost:5173','http://localhost:8082', 'http://localhost:3000'],
   credentials: true
 }));
 app.use(morgan('dev'));
@@ -167,11 +167,33 @@ app.post('/api/appliances', async (req, res) => {
 
     console.log('Sending response:', responseData);
     res.status(201).json(responseData);
-  } catch (error) {
-    console.error('=== ERROR in POST /api/appliances ===');
-    console.error('Error details:', error);
-    res.status(500).json({ error: 'Failed to create appliance', details: error.message });
+  // ... existing code ...
+  // ... existing code ...
+  // ... existing code ...
+  } catch (error: any) {
+    console.error('=== ERROR in /api/appliances ===');
+    console.error('Error type:', error?.constructor?.name || 'Unknown');
+    console.error('Error code:', error?.code || 'No code');
+    console.error('Error message:', error?.message || 'No message');
+    console.error('Full error:', error);
+    
+    // If tables don't exist, return empty array
+    if (error?.code === '42P01') {
+      console.log('Tables do not exist yet, returning empty array');
+      return res.json([]);
+    }
+    
+    // Return detailed error for debugging
+    res.status(500).json({ 
+      error: 'Failed to fetch appliances',
+      details: error?.message || 'Unknown error',
+      code: error?.code || 'NO_CODE',
+      type: error?.constructor?.name || 'Unknown'
+    });
   }
+// ... existing code ...
+// ... existing code ...
+// ... existing code ...
 });
 
 // Update appliance
@@ -238,10 +260,12 @@ app.put('/api/appliances/:id', async (req, res) => {
       maintenanceTasks: tasksWithStatus,
       linkedDocuments: documents
     });
-  } catch (error) {
+  // ... existing code ...
+  } catch (error: any) {
     console.error('Error updating appliance:', error);
     res.status(500).json({ error: 'Failed to update appliance' });
   }
+// ... existing code ...
 });
 
 // Delete appliance
@@ -259,10 +283,12 @@ app.delete('/api/appliances/:id', async (req, res) => {
     }
 
     res.json({ message: 'Appliance deleted successfully' });
-  } catch (error) {
+  // ... existing code ...
+  } catch (error: any) {
     console.error('Error deleting appliance:', error);
     res.status(500).json({ error: 'Failed to delete appliance' });
   }
+// ... existing code ...
 });
 
 // 404 handler

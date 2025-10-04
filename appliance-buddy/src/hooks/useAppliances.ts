@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Appliance } from '@/types/appliance';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'https://appliance-buddy-backend.onrender.com/api';
+
+// ... existing code ...
 
 export const useAppliances = () => {
   const [appliances, setAppliances] = useState<Appliance[]>([]);
