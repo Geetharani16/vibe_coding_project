@@ -135,7 +135,6 @@ app.get('/api/appliances', async (req, res) => {
     });
   }
 });
-
 // Create appliance
 app.post('/api/appliances', async (req, res) => {
   try {
@@ -205,7 +204,6 @@ app.post('/api/appliances', async (req, res) => {
     });
   }
 });
-
 // Update appliance
 app.put('/api/appliances/:id', async (req, res) => {
   try {

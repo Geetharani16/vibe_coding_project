@@ -1,5 +1,5 @@
 import { pgTable, varchar, timestamp, integer, text, uuid } from 'drizzle-orm/pg-core';
-import { users } from './users';
+import { users } from './users.js';
 
 export const appliances = pgTable('appliances', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -15,3 +15,5 @@ export const appliances = pgTable('appliances', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' })
 });
+
+// Remove the duplicate users definition - it's already imported above

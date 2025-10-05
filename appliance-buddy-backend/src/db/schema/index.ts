@@ -1,5 +1,6 @@
-export * from './appliances.js';
-export * from './linkedDocuments.js';
-export * from './maintenanceTasks.js';
-export * from './supportContacts.js';
+// Import users first to avoid circular dependency issues
 export * from './users.js';
+export * from './appliances.js';
+export * from './supportContacts.js';
+export * from './maintenanceTasks.js';
+export * from './linkedDocuments.js';
