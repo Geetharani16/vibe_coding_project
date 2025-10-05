@@ -1,4 +1,5 @@
 import { pgTable, varchar, timestamp, integer, text, uuid } from 'drizzle-orm/pg-core';
+import { users } from './users';
 
 export const appliances = pgTable('appliances', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -11,5 +12,6 @@ export const appliances = pgTable('appliances', {
   purchaseLocation: varchar('purchase_location', { length: 255 }),
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' })
 });

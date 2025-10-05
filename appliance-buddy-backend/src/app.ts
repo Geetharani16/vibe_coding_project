@@ -104,23 +104,34 @@ app.get('/api/appliances', async (req, res) => {
     res.json(appliancesWithRelations);
   } catch (error: any) {
     console.error('=== ERROR in /api/appliances ===');
-    console.error('Error type:', error.constructor.name);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
+    console.error('Error type:', error?.constructor?.name || 'Unknown');
+    console.error('Error code:', error?.code || 'No code');
+    console.error('Error message:', error?.message || 'No message');
     console.error('Full error:', error);
     
-    // If tables don't exist, return empty array
-    if (error.code === '42P01') {
+    // Handle specific database errors
+    if (error?.code === '42P01') {
       console.log('Tables do not exist yet, returning empty array');
       return res.json([]);
+    }
+    
+    // Handle Supabase connection errors
+    if (error?.code === 'XX000') {
+      console.log('Database connection error:', error?.message);
+      return res.status(500).json({ 
+        error: 'Database connection failed',
+        details: 'Unable to connect to the database. Please check connection settings.',
+        code: 'DB_CONNECTION_ERROR',
+        type: 'DatabaseError'
+      });
     }
     
     // Return detailed error for debugging
     res.status(500).json({ 
       error: 'Failed to fetch appliances',
-      details: error.message,
-      code: error.code,
-      type: error.constructor.name
+      details: error?.message || 'Unknown error occurred while fetching appliances',
+      code: error?.code || 'FETCH_ERROR',
+      type: error?.constructor?.name || 'Unknown'
     });
   }
 });
@@ -130,6 +141,10 @@ app.post('/api/appliances', async (req, res) => {
   try {
     console.log('=== POST /api/appliances ===');
     console.log('Received data:', req.body);
+    
+    // For now, we'll use a default user ID since we don't have authentication
+    // In a real app, this would come from the authenticated user
+    const defaultUserId = '00000000-0000-0000-0000-000000000000'; // Temporary placeholder
     
     const result = await db
       .insert(appliances)
@@ -142,6 +157,7 @@ app.post('/api/appliances', async (req, res) => {
         serialNumber: req.body.serialNumber || null,
         purchaseLocation: req.body.purchaseLocation || null,
         notes: req.body.notes || null,
+        userId: defaultUserId, // Add the required userId field
         updatedAt: new Date()
       })
       .returning();
@@ -167,11 +183,8 @@ app.post('/api/appliances', async (req, res) => {
 
     console.log('Sending response:', responseData);
     res.status(201).json(responseData);
-  // ... existing code ...
-  // ... existing code ...
-  // ... existing code ...
   } catch (error: any) {
-    console.error('=== ERROR in /api/appliances ===');
+    console.error('=== ERROR in POST /api/appliances ===');
     console.error('Error type:', error?.constructor?.name || 'Unknown');
     console.error('Error code:', error?.code || 'No code');
     console.error('Error message:', error?.message || 'No message');
@@ -185,15 +198,12 @@ app.post('/api/appliances', async (req, res) => {
     
     // Return detailed error for debugging
     res.status(500).json({ 
-      error: 'Failed to fetch appliances',
+      error: 'Failed to create appliance',
       details: error?.message || 'Unknown error',
       code: error?.code || 'NO_CODE',
       type: error?.constructor?.name || 'Unknown'
     });
   }
-// ... existing code ...
-// ... existing code ...
-// ... existing code ...
 });
 
 // Update appliance
