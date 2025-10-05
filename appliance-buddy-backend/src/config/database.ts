@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import postgres, { Sql } from 'postgres';
 import * as schema from '../db/schema/index.js';
 import dotenv from 'dotenv';
 
@@ -18,9 +18,9 @@ const dbHost = process.env.DB_HOST || 'db.sgkirxqorrongtknnkzt.supabase.co';
 
 console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${dbHost}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 
-// Enhanced connection configuration with better error handling
-let client;
-let db;
+// Initialize variables with proper types
+let client: Sql<{}> | null = null;
+let db: ReturnType<typeof drizzle> | null = null;
 
 try {
   client = postgres({
