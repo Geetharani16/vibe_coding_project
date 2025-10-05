@@ -33,22 +33,21 @@ async function testConnection(host, description) {
     } : false,
     connect_timeout: 20,
     idle_timeout: 30,
-    max: 1
+    max: 1,
+    family: 4 // Force IPv4
   });
 
   try {
     console.log('Attempting database query...');
-    const result = await client`SELECT current_database(), current_user, version(); SELECT inet_server_addr();`;
+    const result = await client`SELECT current_database(), current_user, version()`;
     console.log('✅ Connection successful!');
     console.log('Current database:', result[0].current_database);
     console.log('Current user:', result[0].current_user);
-    console.log('Server IP:', result[1].inet_server_addr);
     return true;
   } catch (error) {
     console.log('❌ Connection failed!');
     console.log('Error:', error.message);
     console.log('Error code:', error.code);
-    console.log('Stack trace:', error.stack);
     return false;
   } finally {
     await client.end();
