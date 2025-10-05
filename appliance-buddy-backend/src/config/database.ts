@@ -44,9 +44,12 @@ try {
   const testConnection = async () => {
     try {
       console.log('Testing database connection...');
-      const result = await client`SELECT 1`;
-      console.log('✅ Database connection successful!');
-      return true;
+      if (client) {
+        const result = await client`SELECT 1`;
+        console.log('✅ Database connection successful!');
+        return true;
+      }
+      return false;
     } catch (error: any) {
       console.error('❌ Database connection failed:', error.message);
       console.error('Error code:', error.code);

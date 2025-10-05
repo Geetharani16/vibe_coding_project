@@ -12,6 +12,12 @@ console.log('DB_USER:', process.env.DB_USER);
 console.log('DB_NAME:', process.env.DB_NAME);
 
 async function setupDatabase() {
+  // Check if database is available
+  if (!db) {
+    console.error('Database connection is not available');
+    throw new Error('Database connection is not available');
+  }
+  
   try {
     console.log('Creating tables on Supabase...');
 
