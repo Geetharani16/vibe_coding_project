@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../config/database.js';
+import { db, useMockDb } from '../config/database.js';
 import { appliances } from '../db/schema/appliances.js';
 import { eq } from 'drizzle-orm';
 
@@ -19,7 +19,17 @@ export const getAllAppliances = async (req: Request, res: Response) => {
   
   try {
     console.log('Fetching all appliances...');
-    const allAppliances = await db.select().from(appliances);
+    let allAppliances;
+    
+    if (useMockDb) {
+      // For mock database
+      const result = await db.select().from({ name: 'appliances' });
+      allAppliances = result;
+    } else {
+      // For real database
+      allAppliances = await db.select().from(appliances);
+    }
+    
     console.log(`Found ${allAppliances.length} appliances`);
     res.status(200).json(allAppliances);
   } catch (error: any) {
@@ -53,7 +63,15 @@ export const addAppliance = async (req: Request, res: Response) => {
       });
     }
     
-    const result = await db.insert(appliances).values(newAppliance).returning();
+    let result;
+    if (useMockDb) {
+      // For mock database
+      result = await db.insert({ name: 'appliances' }).values(newAppliance).returning();
+    } else {
+      // For real database
+      result = await db.insert(appliances).values(newAppliance).returning();
+    }
+    
     console.log('Appliance added successfully:', result[0]);
     res.status(201).json(result[0]);
   } catch (error: any) {
@@ -81,11 +99,15 @@ export const updateAppliance = async (req: Request, res: Response) => {
     
     console.log(`Updating appliance ${id}:`, updates);
     
-    const result = await db.update(appliances)
-      .set(updates)
-      .where(eq(appliances.id, id))
-      .returning();
-      
+    let result;
+    if (useMockDb) {
+      // For mock database
+      result = await db.update({ name: 'appliances' }).set(updates).where({ _where: { left: { value: id } } }).returning();
+    } else {
+      // For real database
+      result = await db.update(appliances).set(updates).where(eq(appliances.id, id)).returning();
+    }
+    
     if (result.length === 0) {
       return res.status(404).json({ 
         error: 'Appliance not found',
@@ -119,10 +141,15 @@ export const deleteAppliance = async (req: Request, res: Response) => {
     
     console.log(`Deleting appliance ${id}`);
     
-    const result = await db.delete(appliances)
-      .where(eq(appliances.id, id))
-      .returning();
-      
+    let result;
+    if (useMockDb) {
+      // For mock database
+      result = await db.delete({ name: 'appliances' }).where({ _where: { left: { value: id } } }).returning();
+    } else {
+      // For real database
+      result = await db.delete(appliances).where(eq(appliances.id, id)).returning();
+    }
+    
     if (result.length === 0) {
       return res.status(404).json({ 
         error: 'Appliance not found',

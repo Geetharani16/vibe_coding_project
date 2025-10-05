@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres, { Sql } from 'postgres';
 import * as schema from '../db/schema/index.js';
 import dotenv from 'dotenv';
+import { mockDb } from './mockDatabase.js';
 
 dotenv.config();
 
@@ -17,10 +18,12 @@ if (missingEnvVars.length > 0) {
 const dbHost = process.env.DB_HOST || 'db.sgkirxqorrongtknnkzt.supabase.co';
 
 console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${dbHost}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
 // Initialize variables with proper types
 let client: Sql<{}> | null = null;
-let db: ReturnType<typeof drizzle> | null = null;
+let db: any = null;
+let useMockDb = false;
 
 try {
   client = postgres({
@@ -40,16 +43,21 @@ try {
     }
   });
 
-  // Test the connection
+  // Test the connection with timeout handling
   const testConnection = async () => {
     try {
       console.log('Testing database connection...');
-      if (client) {
-        const result = await client`SELECT 1`;
-        console.log('✅ Database connection successful!');
-        return true;
-      }
-      return false;
+      
+      // Add a timeout wrapper
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Database connection test timeout after 15 seconds')), 15000);
+      });
+      
+      const queryPromise = client ? client`SELECT 1` : Promise.reject(new Error('Client not initialized'));
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      
+      console.log('✅ Database connection successful!');
+      return true;
     } catch (error: any) {
       console.error('❌ Database connection failed:', error.message);
       console.error('Error code:', error.code);
@@ -60,17 +68,23 @@ try {
   };
 
   // Run connection test
-  testConnection().catch((error: any) => {
+  const connectionSuccess = await testConnection().catch((error: any) => {
     console.error('❌ Database connection test failed:', error.message);
+    return false;
   });
 
-  db = drizzle(client, { schema });
+  if (connectionSuccess) {
+    db = drizzle(client, { schema });
+  } else {
+    console.log('⚠️  Falling back to mock database for development/testing');
+    useMockDb = true;
+    db = mockDb;
+  }
 } catch (error: any) {
   console.error('❌ Failed to initialize database connection:', error.message);
-  // In a production environment, you might want to handle this differently
-  // For now, we'll export undefined db and handle it in the controllers
-  client = null;
-  db = null;
+  console.log('⚠️  Falling back to mock database for development/testing');
+  useMockDb = true;
+  db = mockDb;
 }
 
-export { db, client };
+export { db, client, useMockDb };
