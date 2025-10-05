@@ -33,8 +33,7 @@ async function testConnection(host, description) {
     } : false,
     connect_timeout: 20,
     idle_timeout: 30,
-    max: 1,
-    family: 4 // Force IPv4
+    max: 1
   });
 
   try {

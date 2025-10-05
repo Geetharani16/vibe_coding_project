@@ -17,7 +17,7 @@ const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_P
 
 console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 
-// Enhanced connection configuration with IPv4 enforcement
+// Enhanced connection configuration with better timeout handling
 const client = postgres(connectionString, {
   ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false
@@ -28,9 +28,7 @@ const client = postgres(connectionString, {
   connection: {
     application_name: 'appliance-buddy-backend'
   },
-  // Force IPv4 connection
-  host: process.env.DB_HOST,
-  family: 4
+  // Remove family property which causes TypeScript error
 });
 
 // Test the connection with detailed logging
