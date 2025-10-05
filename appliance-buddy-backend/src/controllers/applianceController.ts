@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import { db } from '../config/database.js';
-import { appliances, InsertAppliance } from '../db/schema/appliances.js';
+import { appliances } from '../db/schema/appliances.js';
 import { eq } from 'drizzle-orm';
+
+// Define the type for inserting appliances
+type InsertAppliance = typeof appliances.$inferInsert;
+type SelectAppliance = typeof appliances.$inferSelect;
 
 // GET all appliances
 export const getAllAppliances = async (req: Request, res: Response) => {
@@ -25,11 +29,11 @@ export const addAppliance = async (req: Request, res: Response) => {
     console.log('Adding new appliance:', req.body);
     const newAppliance: InsertAppliance = req.body;
     
-    // Validate required fields
-    if (!newAppliance.name || !newAppliance.category) {
+    // Validate required fields based on your schema
+    if (!newAppliance.name || !newAppliance.brand || !newAppliance.model) {
       return res.status(400).json({ 
         error: 'Missing required fields',
-        message: 'Name and category are required'
+        message: 'Name, brand, and model are required'
       });
     }
     
@@ -55,7 +59,7 @@ export const updateAppliance = async (req: Request, res: Response) => {
     
     const result = await db.update(appliances)
       .set(updates)
-      .where(eq(appliances.id, parseInt(id)))
+      .where(eq(appliances.id, id))
       .returning();
       
     if (result.length === 0) {
@@ -84,7 +88,7 @@ export const deleteAppliance = async (req: Request, res: Response) => {
     console.log(`Deleting appliance ${id}`);
     
     const result = await db.delete(appliances)
-      .where(eq(appliances.id, parseInt(id)))
+      .where(eq(appliances.id, id))
       .returning();
       
     if (result.length === 0) {
