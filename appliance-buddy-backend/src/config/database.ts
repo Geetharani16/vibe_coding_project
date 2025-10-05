@@ -13,12 +13,12 @@ if (missingEnvVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
 }
 
-// Use the direct host without db. prefix and force IPv4
+// Use the direct host without db. prefix
 const dbHost = process.env.DB_HOST?.replace('db.', '') || 'sgkirxqorrongtknnkzt.supabase.co';
 
 console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${dbHost}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 
-// Enhanced connection configuration with explicit IPv4 enforcement
+// Enhanced connection configuration
 const client = postgres({
   host: dbHost,
   port: parseInt(process.env.DB_PORT || '5432', 10),
@@ -33,9 +33,7 @@ const client = postgres({
   max: 1,
   connection: {
     application_name: 'appliance-buddy-backend'
-  },
-  // Explicitly force IPv4
-  family: 4
+  }
 });
 
 // Test the connection with detailed logging
