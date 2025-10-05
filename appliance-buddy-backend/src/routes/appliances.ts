@@ -9,12 +9,6 @@ import {
 
 const router = Router();
 
-// Log when routes are accessed
-router.use((req, res, next) => {
-  console.log(`Appliances route accessed: ${req.method} ${req.path}`);
-  next();
-});
-
 // GET all appliances
 router.get('/', getAllAppliances);
 
