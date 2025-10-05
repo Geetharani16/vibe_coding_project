@@ -10,6 +10,14 @@ type SelectAppliance = typeof appliances.$inferSelect;
 // GET all appliances
 export const getAllAppliances = async (req: Request, res: Response) => {
   try {
+    // Check if database is available
+    if (!db) {
+      return res.status(503).json({ 
+        error: 'Database unavailable',
+        message: 'Database connection is not available. Please check the service status.'
+      });
+    }
+    
     console.log('Fetching all appliances...');
     const allAppliances = await db.select().from(appliances);
     console.log(`Found ${allAppliances.length} appliances`);
@@ -26,6 +34,14 @@ export const getAllAppliances = async (req: Request, res: Response) => {
 // POST new appliance
 export const addAppliance = async (req: Request, res: Response) => {
   try {
+    // Check if database is available
+    if (!db) {
+      return res.status(503).json({ 
+        error: 'Database unavailable',
+        message: 'Database connection is not available. Please check the service status.'
+      });
+    }
+    
     console.log('Adding new appliance:', req.body);
     const newAppliance: InsertAppliance = req.body;
     
@@ -52,6 +68,14 @@ export const addAppliance = async (req: Request, res: Response) => {
 // PUT update appliance
 export const updateAppliance = async (req: Request, res: Response) => {
   try {
+    // Check if database is available
+    if (!db) {
+      return res.status(503).json({ 
+        error: 'Database unavailable',
+        message: 'Database connection is not available. Please check the service status.'
+      });
+    }
+    
     const { id } = req.params;
     const updates = req.body;
     
@@ -83,6 +107,14 @@ export const updateAppliance = async (req: Request, res: Response) => {
 // DELETE appliance
 export const deleteAppliance = async (req: Request, res: Response) => {
   try {
+    // Check if database is available
+    if (!db) {
+      return res.status(503).json({ 
+        error: 'Database unavailable',
+        message: 'Database connection is not available. Please check the service status.'
+      });
+    }
+    
     const { id } = req.params;
     
     console.log(`Deleting appliance ${id}`);
