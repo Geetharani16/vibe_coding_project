@@ -10,7 +10,8 @@
     "start": "node dist/app.js",
     "db:generate": "drizzle-kit generate:pg",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:setup": "tsx src/db/setup.ts"
+    "db:setup": "tsx src/db/setup.ts",
+    "test:imports": "tsx src/test-imports.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",

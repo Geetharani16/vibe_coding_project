@@ -1,0 +1,1 @@
+{"version":3,"file":"test-imports.js","sourceRoot":"","sources":["../src/test-imports.ts"],"names":[],"mappings":"AAAA,+CAA+C;AAC/C,OAAO,EAAE,gBAAgB,EAAE,MAAM,sCAAsC,CAAC;AACxE,OAAO,eAAe,MAAM,wBAAwB,CAAC;AAErD,OAAO,CAAC,GAAG,CAAC,2BAA2B,CAAC,CAAC;AACzC,OAAO,CAAC,GAAG,CAAC,mBAAmB,EAAE,OAAO,gBAAgB,CAAC,CAAC;AAC1D,OAAO,CAAC,GAAG,CAAC,kBAAkB,EAAE,OAAO,eAAe,CAAC,CAAC"}
