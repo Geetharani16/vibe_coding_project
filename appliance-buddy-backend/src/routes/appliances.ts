@@ -5,7 +5,7 @@ import {
   addAppliance, 
   updateAppliance, 
   deleteAppliance 
-} from '../controllers/applianceController.js';
+} from '../controllers/applianceController';
 
 const router = Router();
 
