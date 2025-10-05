@@ -6,7 +6,7 @@ import applianceRoutes from './routes/appliances.js';
 dotenv.config();
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3002', 10);
+const PORT = parseInt(process.env.PORT || '10000', 10);
 
 // CORS configuration
 const corsOptions = {
@@ -26,6 +26,7 @@ app.use((req, res, next) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  console.log('Health check endpoint accessed');
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
@@ -33,14 +34,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes with logging
-app.use('/api/appliances', (req, res, next) => {
-  console.log(`API route accessed: ${req.method} ${req.path}`);
-  next();
-}, applianceRoutes);
-
 // Root endpoint for testing
 app.get('/', (req, res) => {
+  console.log('Root endpoint accessed');
   res.status(200).json({ 
     message: 'Appliance Buddy Backend is running!',
     api_docs: '/api/appliances',
@@ -48,8 +44,12 @@ app.get('/', (req, res) => {
   });
 });
 
+// API routes - Mount the appliances routes under /api/appliances
+app.use('/api/appliances', applianceRoutes);
+
 // 404 handler for unmatched routes
 app.use('*', (req, res) => {
+  console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ 
     error: 'Route not found',
     message: `Cannot ${req.method} ${req.originalUrl}`,
