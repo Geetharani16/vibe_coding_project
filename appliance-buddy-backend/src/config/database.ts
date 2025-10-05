@@ -13,12 +13,18 @@ if (missingEnvVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
 }
 
-const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+// Use the direct host without db. prefix and force IPv4
+const dbHost = process.env.DB_HOST?.replace('db.', '') || 'sgkirxqorrongtknnkzt.supabase.co';
 
-console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${dbHost}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 
-// Enhanced connection configuration for Supabase
-const client = postgres(connectionString, {
+// Enhanced connection configuration with explicit IPv4 enforcement
+const client = postgres({
+  host: dbHost,
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false
   } : false,
@@ -27,7 +33,9 @@ const client = postgres(connectionString, {
   max: 1,
   connection: {
     application_name: 'appliance-buddy-backend'
-  }
+  },
+  // Explicitly force IPv4
+  family: 4
 });
 
 // Test the connection with detailed logging
@@ -40,7 +48,7 @@ const testConnection = async () => {
   } catch (error: any) {
     console.error('❌ Database connection failed:', error.message);
     console.error('Error code:', error.code);
-    console.error('Host attempted:', process.env.DB_HOST);
+    console.error('Host attempted:', dbHost);
     console.error('Port attempted:', process.env.DB_PORT);
     return false;
   }
