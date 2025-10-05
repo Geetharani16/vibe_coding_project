@@ -10,7 +10,8 @@ console.log('DB_PORT:', process.env.DB_PORT);
 console.log('DB_USER:', process.env.DB_USER);
 console.log('DB_NAME:', process.env.DB_NAME);
 
-const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+// Force IPv4 connection
+const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}?host=${process.env.DB_HOST}`;
 
 console.log('Connection string:', connectionString.replace(process.env.DB_PASSWORD, '***'));
 
@@ -19,6 +20,7 @@ const client = postgres(connectionString, {
     rejectUnauthorized: false
   },
   connect_timeout: 10,
+  host: process.env.DB_HOST // Force IPv4
 });
 
 try {
