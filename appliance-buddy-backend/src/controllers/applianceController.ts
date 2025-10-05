@@ -1,66 +1,87 @@
 import { Request, Response } from 'express';
-import { db, useMockDb } from '../config/database';
-import { appliances } from '../db/schema';
+import { db, useMockDb } from '../config/database.js';
+import { appliances } from '../db/schema/appliances.js';
+import { eq } from 'drizzle-orm';
 
 // GET all appliances
 export const getAllAppliances = async (req: Request, res: Response) => {
+  // Check if database is available
   if (!db) {
+    console.log('getAllAppliances: Database not available');
     return res.status(503).json({ 
       error: 'Database unavailable',
       message: 'Database connection is not available. Please check the service status.'
     });
   }
-
+  
   try {
-    let result;
+    console.log('getAllAppliances: Fetching all appliances...');
+    let allAppliances: any[];
+    
     if (useMockDb) {
-      result = await db.select().from('appliances');
+      console.log('getAllAppliances: Using mock database');
+      const result: any = await db.select().from('appliances');
+      allAppliances = result;
+      console.log('getAllAppliances: Mock DB returned:', result);
     } else {
-      result = await db.select().from(appliances);
+      console.log('getAllAppliances: Using real database');
+      allAppliances = await db.select().from(appliances);
     }
     
-    res.status(200).json(result);
+    console.log(`getAllAppliances: Found ${allAppliances.length} appliances`);
+    res.status(200).json(allAppliances);
   } catch (error: any) {
-    console.error('Error fetching appliances:', error);
+    console.error('getAllAppliances: Error fetching appliances:', error);
     res.status(500).json({ 
       error: 'Failed to fetch appliances',
-      message: error.message
+      message: error.message 
     });
   }
 };
 
 // GET specific appliance by ID
 export const getApplianceById = async (req: Request, res: Response) => {
+  // Check if database is available
   if (!db) {
+    console.log('getApplianceById: Database not available');
     return res.status(503).json({ 
       error: 'Database unavailable',
       message: 'Database connection is not available. Please check the service status.'
     });
   }
-
+  
   try {
     const { id } = req.params;
+    console.log(`getApplianceById: Fetching appliance with id: ${id}`);
     
-    let result;
+    let appliance: any;
     if (useMockDb) {
-      result = await db.select().from('appliances').where({ id }).limit(1);
+      console.log('getApplianceById: Using mock database');
+      const result: any = await db.select().from('appliances');
+      console.log('getApplianceById: Mock DB returned all appliances:', result);
+      appliance = result.find((item: any) => item.id === id);
+      console.log(`getApplianceById: Found appliance:`, appliance);
     } else {
-      result = await db.select().from(appliances).where({ id: parseInt(id) }).limit(1);
+      console.log('getApplianceById: Using real database');
+      const result = await db.select().from(appliances).where(eq(appliances.id, id));
+      appliance = result[0];
     }
     
-    if (result.length === 0) {
+    if (!appliance) {
+      console.log(`getApplianceById: Appliance with id ${id} not found`);
       return res.status(404).json({ 
         error: 'Appliance not found',
-        message: `Appliance with ID ${id} not found`
+        message: `Appliance with id ${id} not found`
       });
     }
     
-    res.status(200).json(result[0]);
+    console.log('getApplianceById: Appliance found:', appliance);
+    res.status(200).json(appliance);
   } catch (error: any) {
-    console.error('Error fetching appliance:', error);
+    console.error('getApplianceById: Error fetching appliance:', error);
     res.status(500).json({ 
       error: 'Failed to fetch appliance',
-      message: error.message
+      message: error.message 
     });
   }
 };
@@ -123,7 +144,7 @@ export const addAppliance = async (req: Request, res: Response) => {
       });
     }
     
-    let result;
+    let result: any[];
     if (useMockDb) {
       console.log('addAppliance: Using mock database');
       try {
@@ -153,8 +174,7 @@ export const addAppliance = async (req: Request, res: Response) => {
       message: error.message,
       details: process.env.NODE_ENV === 'production' ? 'Internal server error' : {
         name: error.name,
-        message: error.message,
-        stack: error.stack
+        message: error.message
       }
     });
   }
@@ -162,78 +182,94 @@ export const addAppliance = async (req: Request, res: Response) => {
 
 // PUT update appliance
 export const updateAppliance = async (req: Request, res: Response) => {
+  // Check if database is available
   if (!db) {
+    console.log('updateAppliance: Database not available');
     return res.status(503).json({ 
       error: 'Database unavailable',
       message: 'Database connection is not available. Please check the service status.'
     });
   }
-
+  
   try {
     const { id } = req.params;
-    const updateData: any = req.body;
+    const updates = req.body;
     
-    // Remove fields that shouldn't be updated
-    delete updateData.id;
-    delete updateData.createdAt;
-    updateData.updatedAt = new Date().toISOString();
+    console.log(`updateAppliance: Updating appliance ${id}:`, updates);
     
-    let result;
+    let result: any[];
     if (useMockDb) {
-      result = await db.update('appliances').set(updateData).where({ id }).returning();
+      console.log('updateAppliance: Using mock database');
+      result = await db.update('appliances').set({ ...updates, id }).where({ _where: { left: { value: id } } }).returning();
+      console.log('updateAppliance: Mock DB update result:', result);
     } else {
-      result = await db.update(appliances).set(updateData).where({ id: parseInt(id) }).returning();
+      console.log('updateAppliance: Using real database');
+      result = await db.update(appliances).set(updates).where(eq(appliances.id, id)).returning();
     }
     
     if (result.length === 0) {
+      console.log(`updateAppliance: Appliance with id ${id} not found`);
       return res.status(404).json({ 
         error: 'Appliance not found',
-        message: `Appliance with ID ${id} not found`
+        message: `Appliance with id ${id} not found`
       });
     }
     
+    console.log('updateAppliance: Appliance updated successfully:', result[0]);
     res.status(200).json(result[0]);
   } catch (error: any) {
-    console.error('Error updating appliance:', error);
+    console.error('updateAppliance: Error updating appliance:', error);
     res.status(500).json({ 
       error: 'Failed to update appliance',
-      message: error.message
+      message: error.message 
     });
   }
 };
 
 // DELETE appliance
 export const deleteAppliance = async (req: Request, res: Response) => {
+  // Check if database is available
   if (!db) {
+    console.log('deleteAppliance: Database not available');
     return res.status(503).json({ 
       error: 'Database unavailable',
       message: 'Database connection is not available. Please check the service status.'
     });
   }
-
+  
   try {
     const { id } = req.params;
     
-    let result;
+    console.log(`deleteAppliance: Deleting appliance ${id}`);
+    
+    let result: any[];
     if (useMockDb) {
-      result = await db.delete('appliances').where({ id }).returning();
+      console.log('deleteAppliance: Using mock database');
+      result = await db.delete('appliances').where({ _where: { left: { value: id } } }).returning();
+      console.log('deleteAppliance: Mock DB delete result:', result);
     } else {
-      result = await db.delete(appliances).where({ id: parseInt(id) }).returning();
+      console.log('deleteAppliance: Using real database');
+      result = await db.delete(appliances).where(eq(appliances.id, id)).returning();
     }
     
     if (result.length === 0) {
+      console.log(`deleteAppliance: Appliance with id ${id} not found`);
       return res.status(404).json({ 
         error: 'Appliance not found',
-        message: `Appliance with ID ${id} not found`
+        message: `Appliance with id ${id} not found`
       });
     }
     
-    res.status(200).json({ message: 'Appliance deleted successfully' });
+    console.log('deleteAppliance: Appliance deleted successfully:', result[0]);
+    res.status(200).json({ 
+      message: 'Appliance deleted successfully',
+      deleted: result[0]
+    });
   } catch (error: any) {
-    console.error('Error deleting appliance:', error);
+    console.error('deleteAppliance: Error deleting appliance:', error);
     res.status(500).json({ 
       error: 'Failed to delete appliance',
-      message: error.message
+      message: error.message 
     });
   }
 };
