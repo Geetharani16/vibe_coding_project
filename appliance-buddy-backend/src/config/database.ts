@@ -18,7 +18,7 @@ const dbHost = process.env.DB_HOST?.replace('db.', '') || 'sgkirxqorrongtknnkzt.
 
 console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${dbHost}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 
-// Enhanced connection configuration
+// Enhanced connection configuration with stricter timeouts
 const client = postgres({
   host: dbHost,
   port: parseInt(process.env.DB_PORT || '5432', 10),
@@ -28,19 +28,26 @@ const client = postgres({
   ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false
   } : false,
-  connect_timeout: 30,
-  idle_timeout: 20,
+  connect_timeout: 15,  // Reduced timeout
+  idle_timeout: 10,     // Reduced timeout
   max: 1,
   connection: {
     application_name: 'appliance-buddy-backend'
   }
 });
 
-// Test the connection with detailed logging
+// Test the connection with detailed logging and timeout
 const testConnection = async () => {
   try {
     console.log('Testing database connection...');
-    const result = await client`SELECT 1`;
+    // Add a timeout wrapper
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database connection test timeout')), 10000);
+    });
+    
+    const queryPromise = client`SELECT 1`;
+    const result = await Promise.race([queryPromise, timeoutPromise]);
+    
     console.log('✅ Database connection successful!');
     return true;
   } catch (error: any) {
