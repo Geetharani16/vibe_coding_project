@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { 
   getAllAppliances, 
+  getApplianceById,
   addAppliance, 
   updateAppliance, 
-  deleteAppliance,
-  getApplianceById
-} from '../controllers/applianceController';
+  deleteAppliance 
+} from '../controllers/applianceController.js';
 
 const router = Router();
 
