@@ -23,7 +23,7 @@ export const getAllAppliances = async (req: Request, res: Response) => {
     
     if (useMockDb) {
       // For mock database
-      const result = await db.select().from({ name: 'appliances' });
+      const result = await db.select().from('appliances');
       allAppliances = result;
     } else {
       // For real database
@@ -36,6 +36,49 @@ export const getAllAppliances = async (req: Request, res: Response) => {
     console.error('Error fetching appliances:', error);
     res.status(500).json({ 
       error: 'Failed to fetch appliances',
+      message: error.message 
+    });
+  }
+};
+
+// GET specific appliance by ID
+export const getApplianceById = async (req: Request, res: Response) => {
+  // Check if database is available
+  if (!db) {
+    return res.status(503).json({ 
+      error: 'Database unavailable',
+      message: 'Database connection is not available. Please check the service status.'
+    });
+  }
+  
+  try {
+    const { id } = req.params;
+    console.log(`Fetching appliance with id: ${id}`);
+    
+    let appliance;
+    if (useMockDb) {
+      // For mock database
+      const result = await db.select().from('appliances');
+      appliance = result.find((item: any) => item.id === id);
+    } else {
+      // For real database
+      const result = await db.select().from(appliances).where(eq(appliances.id, id));
+      appliance = result[0];
+    }
+    
+    if (!appliance) {
+      return res.status(404).json({ 
+        error: 'Appliance not found',
+        message: `Appliance with id ${id} not found`
+      });
+    }
+    
+    console.log('Appliance found:', appliance);
+    res.status(200).json(appliance);
+  } catch (error: any) {
+    console.error('Error fetching appliance:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch appliance',
       message: error.message 
     });
   }
@@ -66,7 +109,7 @@ export const addAppliance = async (req: Request, res: Response) => {
     let result;
     if (useMockDb) {
       // For mock database
-      result = await db.insert({ name: 'appliances' }).values(newAppliance).returning();
+      result = await db.insert('appliances').values(newAppliance).returning();
     } else {
       // For real database
       result = await db.insert(appliances).values(newAppliance).returning();
@@ -102,7 +145,7 @@ export const updateAppliance = async (req: Request, res: Response) => {
     let result;
     if (useMockDb) {
       // For mock database
-      result = await db.update({ name: 'appliances' }).set(updates).where({ _where: { left: { value: id } } }).returning();
+      result = await db.update('appliances').set({ ...updates, id }).where({ _where: { left: { value: id } } }).returning();
     } else {
       // For real database
       result = await db.update(appliances).set(updates).where(eq(appliances.id, id)).returning();
@@ -144,7 +187,7 @@ export const deleteAppliance = async (req: Request, res: Response) => {
     let result;
     if (useMockDb) {
       // For mock database
-      result = await db.delete({ name: 'appliances' }).where({ _where: { left: { value: id } } }).returning();
+      result = await db.delete('appliances').where({ _where: { left: { value: id } } }).returning();
     } else {
       // For real database
       result = await db.delete(appliances).where(eq(appliances.id, id)).returning();

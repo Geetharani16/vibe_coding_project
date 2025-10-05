@@ -3,39 +3,25 @@ import {
   getAllAppliances, 
   addAppliance, 
   updateAppliance, 
-  deleteAppliance 
-} from '../controllers/applianceController.js';
+  deleteAppliance,
+  getApplianceById
+} from '../controllers/applianceController';
 
 const router = Router();
 
-// Log when routes are accessed
-router.use((req, res, next) => {
-  console.log(`Appliances router accessed: ${req.method} ${req.path}`);
-  next();
-});
-
 // GET all appliances
-router.get('/', (req, res, next) => {
-  console.log('GET /api/appliances called');
-  getAllAppliances(req, res).catch(next);
-});
+router.get('/', getAllAppliances);
+
+// GET specific appliance by ID
+router.get('/:id', getApplianceById);
 
 // POST new appliance
-router.post('/', (req, res, next) => {
-  console.log('POST /api/appliances called');
-  addAppliance(req, res).catch(next);
-});
+router.post('/', addAppliance);
 
 // PUT update appliance
-router.put('/:id', (req, res, next) => {
-  console.log(`PUT /api/appliances/${req.params.id} called`);
-  updateAppliance(req, res).catch(next);
-});
+router.put('/:id', updateAppliance);
 
 // DELETE appliance
-router.delete('/:id', (req, res, next) => {
-  console.log(`DELETE /api/appliances/${req.params.id} called`);
-  deleteAppliance(req, res).catch(next);
-});
+router.delete('/:id', deleteAppliance);
 
 export default router;
