@@ -17,18 +17,17 @@ const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_P
 
 console.log(`Attempting to connect to: postgresql://${process.env.DB_USER}:***@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
 
-// Enhanced connection configuration with better timeout handling
+// Enhanced connection configuration for Supabase
 const client = postgres(connectionString, {
   ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false
   } : false,
-  connect_timeout: 20,
-  idle_timeout: 30,
-  max: 2,
+  connect_timeout: 30,
+  idle_timeout: 20,
+  max: 1,
   connection: {
     application_name: 'appliance-buddy-backend'
-  },
-  // Remove family property which causes TypeScript error
+  }
 });
 
 // Test the connection with detailed logging
@@ -43,7 +42,6 @@ const testConnection = async () => {
     console.error('Error code:', error.code);
     console.error('Host attempted:', process.env.DB_HOST);
     console.error('Port attempted:', process.env.DB_PORT);
-    
     return false;
   }
 };
