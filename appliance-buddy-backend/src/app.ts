@@ -18,6 +18,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Log all requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
@@ -27,8 +33,11 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
-app.use('/api', applianceRoutes);
+// API routes with logging
+app.use('/api/appliances', (req, res, next) => {
+  console.log(`API route accessed: ${req.method} ${req.path}`);
+  next();
+}, applianceRoutes);
 
 // Root endpoint for testing
 app.get('/', (req, res) => {
@@ -67,7 +76,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
+  console.log(`🔗 API base URL: http://localhost:${PORT}/api/appliances`);
 });
 
 export default app;
