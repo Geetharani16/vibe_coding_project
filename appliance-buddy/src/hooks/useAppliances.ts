@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Appliance } from '@/types/appliance';
 
-const API_BASE_URL = 'https://appliance-buddy-backend.onrender.com/api';
+const API_BASE_URL = 'https://appliance-buddy-backend.onrender.com';
 
 // ... existing code ...
 
